@@ -42,7 +42,31 @@ const deactivateCompanyAsset = async (req, res, next) => {
   try { await svc.deactivateCompanyAsset(req.params.id); return success(res, null, 'Asset deactivated'); } catch (e) { next(e); }
 };
 
+// Asset Maintenance
+const listMaintenanceLogs = async (req, res, next) => {
+  try { return success(res, await svc.listMaintenanceLogs()); } catch (e) { next(e); }
+};
+const addMaintenanceLog = async (req, res, next) => {
+  try { return success(res, await svc.addMaintenanceLog(req.body), 'Maintenance log added', 201); } catch (e) { next(e); }
+};
+const updateMaintenanceLog = async (req, res, next) => {
+  try { return success(res, await svc.updateMaintenanceLog(req.params.id, req.body), 'Maintenance log updated'); } catch (e) { next(e); }
+};
+const deleteMaintenanceLog = async (req, res, next) => {
+  try { await svc.deleteMaintenanceLog(req.params.id); return success(res, null, 'Maintenance log deleted'); } catch (e) { next(e); }
+};
+
+// Asset Audits
+const listAuditLogs = async (req, res, next) => {
+  try { return success(res, await svc.listAuditLogs()); } catch (e) { next(e); }
+};
+const createAuditEntry = async (req, res, next) => {
+  try { return success(res, await svc.recordAudit({ ...req.body, performedBy: req.user.id }), 'Audit entry created', 201); } catch (e) { next(e); }
+};
+
 module.exports = {
   listEmployeeAssets, allocateAsset, updateAllocation, deleteAllocation, getEmployeeAssetById, getAssetHistory,
-  listCompanyAssets, addCompanyAsset, updateCompanyAsset, deleteCompanyAsset, getCompanyAssetById, deactivateCompanyAsset
+  listCompanyAssets, addCompanyAsset, updateCompanyAsset, deleteCompanyAsset, getCompanyAssetById, deactivateCompanyAsset,
+  listMaintenanceLogs, addMaintenanceLog, updateMaintenanceLog, deleteMaintenanceLog,
+  listAuditLogs, createAuditEntry
 };

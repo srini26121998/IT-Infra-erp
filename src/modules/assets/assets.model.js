@@ -243,7 +243,123 @@ const deactivateCompanyAsset = async (id) => {
   return rowCount > 0;
 };
 
+/** ─── Asset Maintenance ────────────────────────────────────── */
+
+const listMaintenanceLogs = async () => {
+  const { rows } = await query(`
+    SELECT * FROM asset_maintenance 
+    WHERE deleted_at IS NULL 
+    ORDER BY maintenance_date DESC, created_at DESC
+  `);
+  return rows;
+};
+
+const addMaintenanceLog = async (data) => {
+  const {
+    assetId, asset_id,
+    assetName, asset_name,
+    assetTag, asset_tag,
+    serviceType, service_type,
+    cost,
+    maintenanceDate, maintenance_date,
+    description,
+    status,
+    performedBy, performed_by
+  } = data;
+
+  const { rows } = await query(`
+    INSERT INTO asset_maintenance (
+      asset_id, asset_name, asset_tag, service_type, cost, 
+      maintenance_date, description, status, performed_by
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
+  `, [
+    assetId || asset_id || null,
+    assetName || asset_name,
+    assetTag || asset_tag || null,
+    serviceType || service_type,
+    cost || 0,
+    maintenanceDate || maintenance_date || new Date(),
+    description,
+    status || 'In Progress',
+    performedBy || performed_by || null
+  ]);
+  return rows[0];
+};
+
+const updateMaintenanceLog = async (id, data) => {
+  const {
+    assetName, asset_name,
+    assetTag, asset_tag,
+    serviceType, service_type,
+    cost,
+    maintenanceDate, maintenance_date,
+    description,
+    status,
+    performedBy, performed_by
+  } = data;
+
+  const { rows } = await query(`
+    UPDATE asset_maintenance SET
+      asset_name = $2, asset_tag = $3, service_type = $4, cost = $5,
+      maintenance_date = $6, description = $7, status = $8, performed_by = $9,
+      updated_at = NOW()
+    WHERE id = $1 AND deleted_at IS NULL RETURNING *;
+  `, [
+    id,
+    assetName || asset_name,
+    assetTag || asset_tag,
+    serviceType || service_type,
+    cost,
+    maintenanceDate || maintenance_date,
+    description,
+    status,
+    performedBy || performed_by
+  ]);
+  return rows[0];
+};
+
+const deleteMaintenanceLog = async (id) => {
+  const { rowCount } = await query('UPDATE asset_maintenance SET deleted_at = NOW() WHERE id = $1', [id]);
+  return rowCount > 0;
+};
+
+/**
+ * Audit Logs
+ */
+const listAuditLogs = async () => {
+  const { query } = require('../../db/pool');
+  const { rows } = await query(`
+    SELECT 
+      a.id,
+      a.asset_id,
+      a.asset_tag,
+      a.action,
+      a.custodian_name,
+      a.notes,
+      a.created_at,
+      u.name as performed_by_name
+    FROM asset_audits a
+    LEFT JOIN users u ON a.performed_by = u.id
+    ORDER BY a.created_at DESC
+  `);
+  return rows;
+};
+
+const createAuditEntry = async (data) => {
+  const { query } = require('../../db/pool');
+  const { assetId, assetTag, action, custodianName, notes, performedBy } = data;
+  const { rows } = await query(`
+    INSERT INTO asset_audits (asset_id, asset_tag, action, custodian_name, notes, performed_by)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    RETURNING *
+  `, [assetId, assetTag, action, custodianName, notes, performedBy]);
+  return rows[0];
+};
+
 module.exports = {
   listEmployeeAssets, allocateAsset, updateAllocation, softDeleteAllocation, getEmployeeAssetById, getAssetHistory,
-  listCompanyAssets, addCompanyAsset, updateCompanyAsset, softDeleteCompanyAsset, getCompanyAssetById, deactivateCompanyAsset
+  listCompanyAssets, addCompanyAsset, updateCompanyAsset, softDeleteCompanyAsset, getCompanyAssetById, deactivateCompanyAsset,
+  listMaintenanceLogs, addMaintenanceLog, updateMaintenanceLog, deleteMaintenanceLog,
+  listAuditLogs, createAuditEntry
 };

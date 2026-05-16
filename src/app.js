@@ -107,8 +107,7 @@ app.get('/', (_req, res) => {
   res.json({
     success: true,
     message: 'IT Infra ERP API is running',
-    version: '1.0.5',
-    docs: '/v1/docs (coming soon)',
+    version: '1.0.6',
     health: '/health'
   });
 });

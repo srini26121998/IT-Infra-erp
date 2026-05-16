@@ -2081,6 +2081,174 @@
               ]
             }
           }
+        },
+        {
+          "name": "Asset Maintenance",
+          "item": [
+            {
+              "name": "List Maintenance Logs",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/assets/maintenance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "assets",
+                    "maintenance"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Add Maintenance Log",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"assetName\": \"Dell PowerEdge R740\",\n  \"assetTag\": \"SRV-0042\",\n  \"serviceType\": \"Hardware Upgrade\",\n  \"cost\": 450,\n  \"maintenanceDate\": \"2025-10-12\",\n  \"description\": \"Upgraded RAM from 64GB to 128GB. Routine cleaning of heat sinks.\",\n  \"status\": \"Completed\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/assets/maintenance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "assets",
+                    "maintenance"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Maintenance Log",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"assetName\": \"Dell PowerEdge R740\",\n  \"assetTag\": \"SRV-0042\",\n  \"serviceType\": \"Hardware Upgrade\",\n  \"cost\": 500,\n  \"maintenanceDate\": \"2025-10-12\",\n  \"description\": \"Upgraded RAM from 64GB to 128GB. Updated BIOS.\",\n  \"status\": \"Completed\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/assets/maintenance/{{maintenanceId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "assets",
+                    "maintenance",
+                    "{{maintenanceId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete Maintenance Log",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/assets/maintenance/{{maintenanceId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "assets",
+                    "maintenance",
+                    "{{maintenanceId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asset Audits",
+          "item": [
+            {
+              "name": "List Audit Logs",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/assets/audits",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "assets",
+                    "audits"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Audit Entry",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"assetTag\": \"LPT-0092\",\n  \"action\": \"ALLOCATED\",\n  \"custodianName\": \"John Doe\",\n  \"notes\": \"New assignment for developer role.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/assets/audits",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "assets",
+                    "audits"
+                  ]
+                }
+              }
+            }
+          ]
         }
       ]
     },

@@ -26,4 +26,14 @@ router.put('/company/:id', adminOnly, ctrl.updateCompanyAsset);
 router.patch('/company/:id/deactivate', adminOnly, ctrl.deactivateCompanyAsset);
 router.delete('/company/:id', superOnly, ctrl.deleteCompanyAsset);
 
+// Asset Maintenance
+router.get('/maintenance', adminOnly, ctrl.listMaintenanceLogs);
+router.post('/maintenance', adminOnly, ctrl.addMaintenanceLog);
+router.put('/maintenance/:id', adminOnly, ctrl.updateMaintenanceLog);
+router.delete('/maintenance/:id', superOnly, ctrl.deleteMaintenanceLog);
+
+// Asset Audits
+router.get('/audits', adminOnly, ctrl.listAuditLogs);
+router.post('/audits', adminOnly, ctrl.createAuditEntry);
+
 module.exports = router;

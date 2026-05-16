@@ -15,7 +15,18 @@ const deleteCompanyAsset = (id) => model.softDeleteCompanyAsset(id);
 const getCompanyAssetById = (id) => model.getCompanyAssetById(id);
 const deactivateCompanyAsset = (id) => model.deactivateCompanyAsset(id);
 
+const listMaintenanceLogs = () => model.listMaintenanceLogs();
+const addMaintenanceLog = (data) => model.addMaintenanceLog(data);
+const updateMaintenanceLog = (id, data) => model.updateMaintenanceLog(id, data);
+const deleteMaintenanceLog = (id) => model.deleteMaintenanceLog(id);
+
+// Audit Logs
+const listAuditLogs = () => model.listAuditLogs();
+const recordAudit = (data) => model.createAuditEntry(data);
+
 module.exports = {
   listEmployeeAssets, allocateAsset, updateAllocation, deleteAllocation, getEmployeeAssetById, getAssetHistory,
-  listCompanyAssets, addCompanyAsset, updateCompanyAsset, deleteCompanyAsset, getCompanyAssetById, deactivateCompanyAsset
+  listCompanyAssets, addCompanyAsset, updateCompanyAsset, deleteCompanyAsset, getCompanyAssetById, deactivateCompanyAsset,
+  listMaintenanceLogs, addMaintenanceLog, updateMaintenanceLog, deleteMaintenanceLog,
+  listAuditLogs, recordAudit
 };
