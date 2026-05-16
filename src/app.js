@@ -1,6 +1,5 @@
 require('dotenv').config();
 console.log('>>> IT INFRA ERP BACKEND STARTING - VERSION 1.0.5 <<<');
-console.log('>>> IT INFRA ERP BACKEND STARTING - VERSION 1.0.5 <<<');
 
 const express = require('express');
 const helmet = require('helmet');
@@ -115,6 +114,17 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 app.use('/v1/auth', authLimiter);
+
+// ── Root route ─────────────────────────────────────────────
+app.get('/', (_req, res) => {
+  res.json({
+    success: true,
+    message: 'IT Infra ERP API is running',
+    version: '1.0.5',
+    docs: '/v1/docs (coming soon)',
+    health: '/health'
+  });
+});
 
 // ── Health check ───────────────────────────────────────────
 app.get('/health', (_req, res) => {
