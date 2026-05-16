@@ -114,8 +114,46 @@ app.get('/', (_req, res) => {
 });
 
 // ── Health check ───────────────────────────────────────────
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', ts: new Date().toISOString() });
+app.get('/health', async (_req, res) => {
+  try {
+    const { query } = require('./db/pool');
+    await query('SELECT 1');
+    res.json({
+      status: 'ok',
+      database: 'connected',
+      ts: new Date().toISOString(),
+      env: process.env.NODE_ENV
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      database: 'disconnected',
+      message: err.message,
+      ts: new Date().toISOString()
+    });
+  }
+});
+
+// ── Temporary Seed Route (Delete after use!) ────────────────
+app.get('/v1/auth/seed-db', async (_req, res) => {
+  try {
+    const bcrypt = require('bcrypt');
+    const { query } = require('./db/pool');
+    
+    const email = 'superadmin@infraerp.com';
+    const password = 'Admin@1234';
+    const hash = await bcrypt.hash(password, 12);
+
+    await query(`
+      INSERT INTO users (name, email, username, password_hash, role)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (email) DO NOTHING
+    `, ['Super Admin', email, 'superadmin', hash, 'super-admin']);
+
+    res.json({ success: true, message: 'Database seeded successfully with superadmin@infraerp.com' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Seed failed', error: err.message });
+  }
 });
 
 // ── API v1 routes ──────────────────────────────────────────
@@ -148,6 +186,43 @@ app.use('/v1/notifications', notificationsRoutes);
 app.use('/v1/settings', settingsRoutes);
 app.use('/v1/tracking', trackingRoutes);
 app.use('/v1/navigation', navigationRoutes);
+
+// ── Temporary Migration Route (Delete after use!) ──────────
+app.get('/v1/auth/migrate-db', async (_req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const { query, pool } = require('./db/pool');
+    const MIGRATIONS_DIR = path.join(__dirname, 'db', 'migrations');
+
+    const files = fs.readdirSync(MIGRATIONS_DIR).filter(f => f.endsWith('.sql')).sort();
+    const results = [];
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS _migrations (
+        id SERIAL PRIMARY KEY,
+        filename TEXT NOT NULL UNIQUE,
+        applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    for (const file of files) {
+      const { rows } = await query('SELECT 1 FROM _migrations WHERE filename = $1', [file]);
+      if (rows.length) {
+        results.push({ file, status: 'skipped' });
+        continue;
+      }
+      const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8');
+      await query(sql);
+      await query('INSERT INTO _migrations(filename) VALUES($1)', [file]);
+      results.push({ file, status: 'applied' });
+    }
+
+    res.json({ success: true, message: 'Migrations completed', details: results });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Migration failed', error: err.message });
+  }
+});
 
 // ── 404 handler ────────────────────────────────────────────
 app.use((req, res) => {
