@@ -134,6 +134,26 @@ app.get('/health', async (_req, res) => {
   }
 });
 
+// ── Debug DB Route (Remove in production!) ──────────────────
+app.get('/debug-db', async (_req, res) => {
+  try {
+    const { query } = require('./db/pool');
+    const tables = await query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `);
+    const migrations = await query('SELECT * FROM _migrations').catch(() => ({ rows: [] }));
+    res.json({ 
+      success: true, 
+      tables: tables.rows.map(r => r.table_name),
+      migrations: migrations.rows
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ── Temporary Seed Route (Delete after use!) ────────────────
 app.get('/v1/auth/seed-db', async (_req, res) => {
   try {
@@ -192,8 +212,20 @@ app.get('/v1/auth/migrate-db', async (_req, res) => {
   try {
     const fs = require('fs');
     const path = require('path');
-    const { query, pool } = require('./db/pool');
-    const MIGRATIONS_DIR = path.join(__dirname, 'db', 'migrations');
+    const { query } = require('./db/pool');
+    
+    // In Vercel, process.cwd() is the root of the project
+    const MIGRATIONS_DIR = path.join(process.cwd(), 'src', 'db', 'migrations');
+    
+    if (!fs.existsSync(MIGRATIONS_DIR)) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Migrations directory not found', 
+        path: MIGRATIONS_DIR,
+        cwd: process.cwd(),
+        __dirname: __dirname
+      });
+    }
 
     const files = fs.readdirSync(MIGRATIONS_DIR).filter(f => f.endsWith('.sql')).sort();
     const results = [];
@@ -220,7 +252,12 @@ app.get('/v1/auth/migrate-db', async (_req, res) => {
 
     res.json({ success: true, message: 'Migrations completed', details: results });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Migration failed', error: err.message });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Migration failed', 
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined 
+    });
   }
 });
 
