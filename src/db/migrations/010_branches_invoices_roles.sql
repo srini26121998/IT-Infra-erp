@@ -2,23 +2,20 @@
 --  Migration 010 — Branches, Invoices, and RBAC
 -- ============================================================
 
--- ── Organizational — Branches ───────────────────────────────
-CREATE TABLE IF NOT EXISTS branches (
-  id           UUID           PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id   UUID           NOT NULL REFERENCES companies(id),
-  name         VARCHAR(150)   NOT NULL,
-  code         VARCHAR(20)    UNIQUE,
-  location     VARCHAR(150)   NOT NULL,
-  address      TEXT           NOT NULL,
-  phone        VARCHAR(20)    NOT NULL,
-  email        VARCHAR(255)   NOT NULL,
-  manager      VARCHAR(150),
-  coordinates  VARCHAR(50),   -- "lat,lng" for geofencing
-  status       VARCHAR(20)    NOT NULL DEFAULT 'Active',
-  created_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
-  updated_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
-  deleted_at   TIMESTAMPTZ
-);
+-- ── Organizational — Branches (Extensions) ──────────────────
+ALTER TABLE branches ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES companies(id);
+ALTER TABLE branches ADD COLUMN IF NOT EXISTS location VARCHAR(150);
+ALTER TABLE branches ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
+ALTER TABLE branches ADD COLUMN IF NOT EXISTS email VARCHAR(255);
+ALTER TABLE branches ADD COLUMN IF NOT EXISTS manager VARCHAR(150);
+ALTER TABLE branches ADD COLUMN IF NOT EXISTS coordinates VARCHAR(50);
+
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'branches_code_unique') THEN
+    ALTER TABLE branches ADD CONSTRAINT branches_code_unique UNIQUE (code);
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_branches_company ON branches(company_id) WHERE deleted_at IS NULL;
 
