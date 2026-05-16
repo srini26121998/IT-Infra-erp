@@ -2,8 +2,8 @@
 -- Description: Table to track all lifecycle events of assets
 
 CREATE TABLE IF NOT EXISTS asset_audits (
-    id SERIAL PRIMARY KEY,
-    asset_id INTEGER REFERENCES employee_assets(id) ON DELETE SET NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    asset_id UUID REFERENCES employee_assets(id) ON DELETE SET NULL,
     asset_tag VARCHAR(50),
     action VARCHAR(50) NOT NULL, -- CREATED, ALLOCATED, RETURNED, MAINTENANCE, DECOMMISSIONED, UPDATED
     custodian_name VARCHAR(255),
