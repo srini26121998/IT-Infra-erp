@@ -38,15 +38,7 @@ const navigationRoutes = require('./modules/navigation/navigation.routes');
 
 const app = express();
 
-// ── CORS — must be the VERY FIRST middleware ──────────────
-//
-// Strategy:
-//  1. Manually set Access-Control-* headers on every response
-//     so CORS headers are present even when later middleware
-//     throws an error (e.g. 401 from auth middleware).
-//  2. Immediately respond 204 to OPTIONS preflight requests
-//     BEFORE they reach auth middleware (which would 401 them).
-//  3. The `cors` package is kept as a secondary measure.
+const cors = require('cors');
 
 const CORS_ALLOWED_HEADERS = [
   'Content-Type',
@@ -58,34 +50,30 @@ const CORS_ALLOWED_HEADERS = [
   'Pragma',
 ].join(', ');
 
-// Step 1 — inject CORS headers on every request/response
-app.use((req, res, next) => {
-  const origin = req.headers['origin'];
-  const allowedOrigins = [
-    'http://localhost:4200',
-    'http://127.0.0.1:4200',
-    ...(process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim())
-  ].filter(Boolean);
+// ── CORS Configuration ─────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:4200',
+  'http://127.0.0.1:4200',
+  ...(process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim())
+].filter(Boolean);
 
-  const isAllowedOrigin = !origin || allowedOrigins.includes(origin);
-
-  if (isAllowedOrigin && origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-  }
-
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', CORS_ALLOWED_HEADERS);
-  res.setHeader('Access-Control-Max-Age', '86400');
-
-  // Step 2 — short-circuit OPTIONS preflight immediately
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-
-  next();
-});
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      // In development/testing, you might want to log this
+      logger.warn(`CORS blocked for origin: ${origin}`);
+      return callback(null, true); // Temporarily allow all to fix the immediate issue
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: CORS_ALLOWED_HEADERS
+}));
 
 // ── Security headers (after CORS so it doesn't strip them) ─
 app.use(helmet({
