@@ -168,4 +168,4 @@ app.use((err, req, res, _next) => {
   });
 });
 
-module.exports = { app };
+module.exports = app;
