@@ -52,6 +52,7 @@ const CORS_ALLOWED_HEADERS = [
 
 // ── CORS Configuration ─────────────────────────────────────
 const allowedOrigins = [
+  'https://it-infr-erp-backend-develop.vercel.app',
   'http://localhost:4200',
   'http://127.0.0.1:4200',
   ...(process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim())
@@ -61,7 +62,7 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     } else {
