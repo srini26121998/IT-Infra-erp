@@ -1,5 +1,6 @@
-'use strict';
 require('dotenv').config();
+console.log('>>> IT INFRA ERP BACKEND STARTING - VERSION 1.0.5 <<<');
+console.log('>>> IT INFRA ERP BACKEND STARTING - VERSION 1.0.5 <<<');
 
 const express = require('express');
 const helmet = require('helmet');
