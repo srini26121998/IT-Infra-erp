@@ -18,18 +18,7 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- ── Audit log ────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     UUID,
-  action      TEXT        NOT NULL,
-  table_name  TEXT,
-  record_id   UUID,
-  old_data    JSONB,
-  new_data    JSONB,
-  ip_address  INET,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+-- ── Audit log (Moved to migration 011 for partitioning) ──────
 
 -- ── Users ────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (

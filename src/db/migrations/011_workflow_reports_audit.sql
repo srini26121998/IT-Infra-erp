@@ -40,6 +40,9 @@ CREATE TABLE IF NOT EXISTS workflow_requests (
 );
 
 -- ── Admin — Audit Logs (Partitioned) ──────────────────────────
+-- Drop old unpartitioned table if it exists from migration 001
+DROP TABLE IF EXISTS audit_logs CASCADE;
+
 CREATE TABLE IF NOT EXISTS audit_logs (
   id              UUID           NOT NULL,
   user_id         UUID           REFERENCES users(id) ON DELETE SET NULL,
