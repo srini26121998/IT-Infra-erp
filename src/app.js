@@ -61,15 +61,13 @@ const CORS_ALLOWED_HEADERS = [
 // Step 1 — inject CORS headers on every request/response
 app.use((req, res, next) => {
   const origin = req.headers['origin'];
+  const allowedOrigins = [
+    'http://localhost:4200',
+    'http://127.0.0.1:4200',
+    ...(process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim())
+  ].filter(Boolean);
 
-  const isAllowedOrigin =
-    !origin ||
-    origin.startsWith('http://localhost:') ||
-    origin.startsWith('http://127.0.0.1:') ||
-    (process.env.ALLOWED_ORIGINS || '')
-      .split(',')
-      .map(o => o.trim())
-      .includes(origin);
+  const isAllowedOrigin = !origin || allowedOrigins.includes(origin);
 
   if (isAllowedOrigin && origin) {
     res.setHeader('Access-Control-Allow-Origin', origin);
