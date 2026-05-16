@@ -1,6 +1,6 @@
 'use strict';
 const winston = require('winston');
-const DailyRotateFile = require('winston-daily-rotate-file');
+// const DailyRotateFile = require('winston-daily-rotate-file');
 const path = require('path');
 
 const { combine, timestamp, printf, colorize, errors } = winston.format;
@@ -20,24 +20,8 @@ const transports = [
   }),
 ];
 
-// Only add file logging if NOT in production/serverless
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-  transports.push(
-    new DailyRotateFile({
-      filename     : path.join('logs', 'error-%DATE%.log'),
-      datePattern  : 'YYYY-MM-DD',
-      level        : 'error',
-      maxFiles     : '30d',
-      zippedArchive: true,
-    }),
-    new DailyRotateFile({
-      filename     : path.join('logs', 'combined-%DATE%.log'),
-      datePattern  : 'YYYY-MM-DD',
-      maxFiles     : '14d',
-      zippedArchive: true,
-    })
-  );
-}
+// File logging is disabled in production/serverless environments because of read-only filesystems.
+// If you need file logging in development, you can re-enable it here.
 
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
