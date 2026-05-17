@@ -20,10 +20,29 @@ const findById = async (id) => {
 
 const createContract = async (data) => {
   const { amc_number, amc_name, customer, amc_type, number_of_units, start_date, end_date, total_amc_value, payment_frequency, response_time_sla, resolution_time_sla, penalty_per_hour, auto_renewal } = data;
+  
+  let finalAmcNumber = amc_number;
+  if (!finalAmcNumber || finalAmcNumber.trim() === '') {
+    const { rows: countRows } = await query('SELECT COUNT(*) FROM amc_contracts');
+    const count = Number(countRows[0].count) + 1;
+    
+    let exists = true;
+    let suffix = count;
+    while (exists) {
+      finalAmcNumber = `AMC-${new Date().getFullYear()}-${suffix.toString().padStart(4, '0')}`;
+      const { rows: checkRows } = await query('SELECT id FROM amc_contracts WHERE amc_number = $1 LIMIT 1', [finalAmcNumber]);
+      if (checkRows.length === 0) {
+        exists = false;
+      } else {
+        suffix++;
+      }
+    }
+  }
+
   const { rows } = await query(`
     INSERT INTO amc_contracts (amc_number, amc_name, customer, amc_type, number_of_units, start_date, end_date, total_amc_value, payment_frequency, response_time_sla, resolution_time_sla, penalty_per_hour, auto_renewal)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;
-  `, [amc_number, amc_name, customer, amc_type, number_of_units || 1, start_date, end_date, total_amc_value, payment_frequency, response_time_sla, resolution_time_sla, penalty_per_hour || 0, auto_renewal || false]);
+  `, [finalAmcNumber, amc_name, customer, amc_type, number_of_units || 1, start_date, end_date, total_amc_value, payment_frequency, response_time_sla, resolution_time_sla, penalty_per_hour || 0, auto_renewal || false]);
   return rows[0];
 };
 
