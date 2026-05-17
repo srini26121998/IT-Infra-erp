@@ -256,8 +256,72 @@ const listTimesheets = async ({ employeeId, month, year, status, page = 1, limit
   return model.listTimesheets({ employeeId: resolvedId, month, year, status, page: +page, limit: +limit });
 };
 
-const submitTimesheet = (employeeId, data) =>
-  model.createTimesheet({ employeeId, ...data });
+const submitTimesheet = async (user, data) => {
+  const items = Array.isArray(data) ? data : [data];
+  const results = [];
+
+  for (const item of items) {
+    // Extract fields, mapping snake_case to camelCase where appropriate
+    const workDate = item.work_date || item.workDate;
+    const hoursWorked = item.hours_worked || item.hoursWorked;
+    const description = item.description;
+    const projectId = item.project_id || item.projectId;
+    const amcId = item.amc_id || item.amcId;
+    
+    // Resolve employee
+    let resolvedEmployeeId = null;
+    const empIdField = item.employee_id || item.employeeId;
+
+    if (empIdField) {
+      // 1. Resolve from employee code or employee UUID
+      const { rows } = await query(
+        'SELECT id FROM employees WHERE employee_id = $1 OR id::text = $1 LIMIT 1',
+        [empIdField]
+      );
+      if (rows[0]) {
+        resolvedEmployeeId = rows[0].id;
+      }
+    }
+
+    // 2. Fall back to logged-in user's employeeId from token
+    if (!resolvedEmployeeId && user?.employeeId) {
+      const { rows } = await query(
+        'SELECT id FROM employees WHERE id::text = $1 LIMIT 1',
+        [user.employeeId]
+      );
+      if (rows[0]) {
+        resolvedEmployeeId = rows[0].id;
+      }
+    }
+
+    // 3. Fall back to finding an employee record associated with the user's email
+    if (!resolvedEmployeeId && user?.email) {
+      const { rows } = await query(
+        'SELECT id FROM employees WHERE email = $1 LIMIT 1',
+        [user.email]
+      );
+      if (rows[0]) {
+        resolvedEmployeeId = rows[0].id;
+      }
+    }
+
+    if (!resolvedEmployeeId) {
+      throw Object.assign(new Error('Unable to resolve employee record for timesheet submission'), { status: 400 });
+    }
+
+    const created = await model.createTimesheet({
+      employeeId: resolvedEmployeeId,
+      projectId,
+      amcId,
+      workDate,
+      hoursWorked,
+      description,
+    });
+    results.push(created);
+  }
+
+  return Array.isArray(data) ? results : results[0];
+};
 
 const approveTimesheet = async (id, approverId) => {
   const rec = await model.approveTimesheet(id, approverId);

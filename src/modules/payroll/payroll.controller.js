@@ -108,7 +108,7 @@ const listTimesheets = async (req, res, next) => {
 
 // POST /timesheet
 const submitTimesheet = async (req, res, next) => {
-  try { return success(res, await svc.submitTimesheet(req.user.id, req.body), 'Timesheet submitted', 201); }
+  try { return success(res, await svc.submitTimesheet(req.user, req.body), 'Timesheet submitted', 201); }
   catch (e) { next(e); }
 };
 
