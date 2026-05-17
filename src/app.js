@@ -48,6 +48,8 @@ const CORS_ALLOWED_HEADERS = [
   'Origin',
   'Cache-Control',
   'Pragma',
+  'X-Skip-Loading',
+  'x-skip-loading',
 ].join(', ');
 
 // ── CORS Configuration ─────────────────────────────────────
