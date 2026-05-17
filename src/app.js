@@ -50,6 +50,8 @@ const CORS_ALLOWED_HEADERS = [
   'Pragma',
   'X-Skip-Loading',
   'x-skip-loading',
+  'Priority',
+  'priority',
 ].join(', ');
 
 // ── CORS Configuration ─────────────────────────────────────
@@ -57,6 +59,8 @@ const allowedOrigins = [
   'https://it-infr-erp-backend-develop.vercel.app',
   'http://localhost:4200',
   'http://127.0.0.1:4200',
+  'https://smf-sit-b2b.convergentechnologies.com',
+  'http://smf-sit-b2b.convergentechnologies.com',
   ...(process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim())
 ].filter(Boolean);
 
