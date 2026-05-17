@@ -182,6 +182,14 @@ const sendOtp = async (email, type = 'signup') => {
   await sendOtpEmail(email, otp, type);
 };
 
+/**
+ * Check Role — fetch the user's role by email or username.
+ */
+const checkRole = async (identifier) => {
+  const user = await model.findUserByEmailOrUsername(identifier);
+  return { role: user ? user.role : null };
+};
+
 module.exports = {
   login,
   logout,
@@ -191,4 +199,5 @@ module.exports = {
   verifyOtp,
   resetPassword,
   sendOtp,
+  checkRole,
 };

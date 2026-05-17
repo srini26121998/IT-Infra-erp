@@ -15,6 +15,7 @@ router.post('/verify-otp',       v.verifyOtpRules,       validate, ctrl.verifyOt
 router.post('/reset-password',   v.resetPasswordRules,   validate, ctrl.resetPassword);
 router.post('/send-otp',         v.sendOtpRules,         validate, ctrl.sendOtp);
 router.post('/refresh',          v.refreshRules,         validate, ctrl.refresh);
+router.get('/check-role',                                ctrl.checkRole);
 
 // Protected routes (require valid Bearer token)
 router.post('/logout', authenticate, ctrl.logout);

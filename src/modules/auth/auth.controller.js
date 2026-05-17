@@ -74,4 +74,16 @@ const sendOtp = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { login, logout, refresh, signup, forgotPassword, verifyOtp, resetPassword, sendOtp };
+// GET /v1/auth/check-role
+const checkRole = async (req, res, next) => {
+  try {
+    const { identifier } = req.query;
+    if (!identifier) {
+      return success(res, { role: null }, 'Identifier required');
+    }
+    const data = await authService.checkRole(identifier);
+    return success(res, data, 'Role fetched successfully');
+  } catch (err) { next(err); }
+};
+
+module.exports = { login, logout, refresh, signup, forgotPassword, verifyOtp, resetPassword, sendOtp, checkRole };
