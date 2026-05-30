@@ -98,8 +98,11 @@ const withdraw = async (id, user) => {
 };
 
 const updateStatus = async (id, user, { status, managerComment }) => {
-  const managerId = await resolveEmployeeId(user);
-  if (!managerId) throw Object.assign(new Error('No employee profile linked to this user'), { status: 404 });
+  let managerId = await resolveEmployeeId(user);
+  
+  if (!managerId && user.role !== 'super-admin') {
+    throw Object.assign(new Error('No employee profile linked to this user'), { status: 404 });
+  }
 
   if (!VALID_STATUS.includes(status))
     throw Object.assign(new Error(`status must be Approved or Rejected`), { status: 400 });

@@ -65,21 +65,10 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      // In development/testing, you might want to log this
-      logger.warn(`CORS blocked for origin: ${origin}`);
-      return callback(null, true); // Temporarily allow all to fix the immediate issue
-    }
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: CORS_ALLOWED_HEADERS
+  allowedHeaders: '*' // Allow all headers
 }));
 
 // ── Security headers (after CORS so it doesn't strip them) ─

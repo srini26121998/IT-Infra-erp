@@ -32,5 +32,6 @@ router.get   ('/:id',             ctrl.getOne);          // Any Auth — ownersh
 router.put   ('/:id',             ctrl.update);          // Self (Pending only) — enforced in service
 router.delete('/:id',             ctrl.withdraw);        // Self (Pending only) — enforced in service
 router.patch ('/:id/status', managerPlus, ctrl.updateStatus);
+router.patch ('/:id',        managerPlus, ctrl.updateStatus);
 
 module.exports = router;
