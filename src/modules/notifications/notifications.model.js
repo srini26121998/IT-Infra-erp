@@ -39,4 +39,20 @@ const fanOutEscalation = async (title, message) => {
   `, [title, message]);
 };
 
-module.exports = { listNotifications, getUnreadCount, markAsRead, markAllRead, deleteNotification, fanOutEscalation };
+const createNotification = async (userId, type, title, message) => {
+  const { rows } = await query(`
+    INSERT INTO notifications (user_id, type, title, message)
+    VALUES ($1, $2, $3, $4) RETURNING *;
+  `, [userId, type, title, message]);
+  return rows[0];
+};
+
+const notifyRoles = async (roles, type, title, message) => {
+  await query(`
+    INSERT INTO notifications (user_id, type, title, message)
+    SELECT id, $1, $2, $3
+    FROM users WHERE role = ANY($4::text[]) AND is_active = TRUE;
+  `, [type, title, message, roles]);
+};
+
+module.exports = { listNotifications, getUnreadCount, markAsRead, markAllRead, deleteNotification, fanOutEscalation, createNotification, notifyRoles };
