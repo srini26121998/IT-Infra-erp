@@ -57,7 +57,12 @@ const apply = async (user, body) => {
   if (overlaps)
     throw Object.assign(new Error('You already have an approved or pending leave for these dates'), { status: 409 });
 
-  return model.create({ employeeId, type, startDate, endDate, startTime, endTime, reason, backupSupportId });
+  const leave = await model.create({ employeeId, type, startDate, endDate, startTime, endTime, reason, backupSupportId });
+  
+  const notifModel = require('../notifications/notifications.model');
+  await notifModel.notifyRoles(['admin', 'manager'], 'leave', 'New Leave Request', `A new ${type} leave request has been submitted by an employee.`);
+  
+  return leave;
 };
 
 const updateDraft = async (id, user, body) => {
@@ -112,6 +117,10 @@ const updateStatus = async (id, user, { status, managerComment }) => {
 
   const updated = await model.updateStatus(id, { status, managerId, managerComment });
   if (!updated) throw Object.assign(new Error('Status update failed'), { status: 500 });
+  
+  const notifModel = require('../notifications/notifications.model');
+  await notifModel.createNotification(leave.employee_id, 'leave', `Leave ${status}`, `Your leave request has been ${status.toLowerCase()}.`);
+
   return updated;
 };
 
