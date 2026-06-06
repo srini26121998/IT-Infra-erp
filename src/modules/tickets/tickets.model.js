@@ -101,13 +101,15 @@ const createTicket = async (data) => {
 };
 
 const assignTicket = async (id, assigneeId, deadline, actor, assigneeType = 'employee') => {
-  let employeeId = null;
+  let employeeId = assigneeId; // assigneeId from frontend is always an employee ID
   let companyId = null;
 
   if (assigneeType === 'contract' || assigneeType === 'company') {
-    companyId = assigneeId;
-  } else {
-    employeeId = assigneeId;
+    // Optionally fetch the actual company_id from the employee record if needed
+    const empRes = await query('SELECT company_id FROM employees WHERE id = $1', [assigneeId]);
+    if (empRes.rows.length > 0 && empRes.rows[0].company_id) {
+      companyId = empRes.rows[0].company_id;
+    }
   }
 
   const { rows } = await query(`
