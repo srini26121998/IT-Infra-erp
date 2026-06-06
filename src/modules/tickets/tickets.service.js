@@ -11,12 +11,12 @@ const assignTicket = async (id, employeeId, deadline, actor, assigneeType) => {
   const notifModel = require('../notifications/notifications.model');
   
   // Notify the assigned employee
-  if (assigneeType !== 'company') {
+  if (assigneeType !== 'contract') {
     await notifModel.createNotification(employeeId, 'project', 'Ticket Assigned', `You have been assigned ticket ${id}`);
   }
   
   // Notify admin about the assignment
-  await notifModel.notifyRoles(['admin'], 'project', 'Ticket Assigned', `Ticket ${id} has been assigned to a ${assigneeType === 'company' ? 'company' : 'technician'} by ${actor}`);
+  await notifModel.notifyRoles(['admin'], 'project', 'Ticket Assigned', `Ticket ${id} has been assigned to a ${assigneeType === 'contract' ? 'contractor' : 'technician'} by ${actor}`);
   
   return ticket;
 };
