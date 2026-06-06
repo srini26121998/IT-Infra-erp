@@ -86,4 +86,12 @@ const checkRole = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { login, logout, refresh, signup, forgotPassword, verifyOtp, resetPassword, sendOtp, checkRole };
+// GET /v1/auth/profile
+const getProfile = async (req, res, next) => {
+  try {
+    const data = await authService.getProfile(req.user);
+    return success(res, data, 'Profile fetched successfully');
+  } catch (err) { next(err); }
+};
+
+module.exports = { login, logout, refresh, signup, forgotPassword, verifyOtp, resetPassword, sendOtp, checkRole, getProfile };

@@ -201,8 +201,17 @@ const getMenuItemsByRole = (role) => {
 
 const getMenu = async (req, res, next) => {
     try {
-        const role = req.user.role || 'employee';
-        const menu = getMenuItemsByRole(role);
+        let requestedRole = req.query.role;
+        const actualRole = req.user.role || 'employee';
+        
+        // Only allow admins to simulate other roles, otherwise enforce their own role
+        if (actualRole !== 'super-admin' && actualRole !== 'admin') {
+            requestedRole = actualRole;
+        } else if (!requestedRole) {
+            requestedRole = actualRole;
+        }
+
+        const menu = getMenuItemsByRole(requestedRole);
         return success(res, menu, 'Menu items retrieved successfully');
     } catch (e) {
         next(e);

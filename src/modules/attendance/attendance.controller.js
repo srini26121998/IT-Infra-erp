@@ -15,7 +15,9 @@ const me = async (req, res, next) => {
   try {
     const { page = 1, limit = 30 } = req.query;
     const employeeId = await svc.resolveEmployeeId(req.user);
-    if (!employeeId) throw Object.assign(new Error('No employee profile linked to this user'), { status: 404 });
+    if (!employeeId) {
+      return success(res, [], 'No attendance records (Profile unlinked)');
+    }
     return success(res, await svc.myAttendance(employeeId, { page, limit }), 'My attendance');
   } catch (e) { next(e); }
 };

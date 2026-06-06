@@ -42,8 +42,8 @@ const assignTicket = async (req, res, next) => {
 
 const submitWork = async (req, res, next) => {
   try {
-    const { text, screenshot } = req.body;
-    return success(res, await svc.submitWork(req.params.id, text, screenshot, req.user.name), 'Work submitted');
+    const { text, screenshot, hardwareModel, hardwareCharges, timeElapsed } = req.body;
+    return success(res, await svc.submitWork(req.params.id, text, screenshot, req.user.name, { hardwareModel, hardwareCharges, timeElapsed }), 'Work submitted');
   } catch (e) { next(e); }
 };
 

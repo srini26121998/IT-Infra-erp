@@ -110,12 +110,19 @@ const assignTicket = async (id, employeeId, deadline, actor) => {
   return rows[0];
 };
 
-const submitWork = async (id, text, screenshot, actor) => {
+const submitWork = async (id, text, screenshot, actor, hardwareDetails = {}) => {
+  const { hardwareModel, hardwareCharges, timeElapsed } = hardwareDetails;
   const { rows } = await query(`
     UPDATE tickets SET 
-      status = 'Under Review', submission_text = $2, submission_screenshot = $3, updated_at = NOW()
+      status = 'Under Review', 
+      submission_text = $2, 
+      submission_screenshot = $3, 
+      hardware_model = $4,
+      hardware_charges = $5,
+      time_elapsed = $6,
+      updated_at = NOW()
     WHERE id = $1 RETURNING *;
-  `, [id, text, screenshot]);
+  `, [id, text, screenshot, hardwareModel, hardwareCharges, timeElapsed]);
   
   await addTimeline(id, 'Work submitted for review', actor || 'System');
   return rows[0];

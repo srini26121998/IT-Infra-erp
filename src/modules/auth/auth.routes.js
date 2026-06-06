@@ -19,5 +19,6 @@ router.get('/check-role',                                ctrl.checkRole);
 
 // Protected routes (require valid Bearer token)
 router.post('/logout', authenticate, ctrl.logout);
+router.get('/profile', authenticate, ctrl.getProfile);
 
 module.exports = router;
