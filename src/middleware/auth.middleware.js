@@ -8,11 +8,16 @@ const { error }             = require('../utils/response');
  */
 const authenticate = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return error(res, 'Authorization token required', 401);
+  let token;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if (req.query.token) {
+    token = req.query.token;
   }
 
-  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return error(res, 'Authorization token required', 401);
+  }
   try {
     req.user = verifyAccessToken(token);
     next();

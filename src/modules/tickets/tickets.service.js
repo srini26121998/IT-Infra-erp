@@ -16,7 +16,7 @@ const assignTicket = async (id, employeeId, deadline, actor, assigneeType) => {
     await notifModel.createNotification(rows[0].id, 'project', 'Ticket Assigned', `You have been assigned ticket ${id}`);
   }
   
-  await notifModel.notifyRoles(['admin'], 'project', 'Ticket Assigned', `Ticket ${id} has been assigned to a ${assigneeType === 'contract' || assigneeType === 'company' ? 'contractor' : 'technician'} by ${actor}`);
+  await notifModel.notifyRoles(['admin', 'super-admin'], 'project', 'Ticket Assigned', `Ticket ${id} has been assigned to a ${assigneeType === 'contract' || assigneeType === 'company' ? 'contractor' : 'technician'} by ${actor}`);
   
   return ticket;
 };
@@ -24,7 +24,7 @@ const assignTicket = async (id, employeeId, deadline, actor, assigneeType) => {
 const submitWork = async (id, text, screenshot, actor, hardwareDetails) => {
   const ticket = await model.submitWork(id, text, screenshot, actor, hardwareDetails);
   const notifModel = require('../notifications/notifications.model');
-  await notifModel.notifyRoles(['admin', 'manager'], 'project', 'Ticket Resolved', `Ticket ${id} has been marked as resolved by ${actor}`);
+  await notifModel.notifyRoles(['admin', 'super-admin', 'manager'], 'project', 'Ticket Resolved', `Ticket ${id} has been marked as resolved by ${actor}`);
   return ticket;
 };
 
@@ -32,7 +32,7 @@ const reviewTicket = async (id, status, feedback, actor) => {
   const ticket = await model.reviewTicket(id, status, feedback, actor);
   if (status === 'Approved') {
     const notifModel = require('../notifications/notifications.model');
-    await notifModel.notifyRoles(['admin'], 'project', 'Ticket Approved', `Ticket ${id} has been approved by ${actor}`);
+    await notifModel.notifyRoles(['admin', 'super-admin'], 'project', 'Ticket Approved', `Ticket ${id} has been approved by ${actor}`);
   }
   return ticket;
 };

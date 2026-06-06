@@ -1,5 +1,6 @@
 'use strict';
 const { query } = require('../../db/pool');
+const notificationEvents = require('./notifications.events');
 
 const listNotifications = async (userId, { page = 1, limit = 20 }) => {
   const offset = (page - 1) * limit;
@@ -32,11 +33,15 @@ const deleteNotification = async (id, userId) => {
 };
 
 const fanOutEscalation = async (title, message) => {
-  await query(`
+  const { rows } = await query(`
     INSERT INTO notifications (user_id, type, title, message)
     SELECT id, 'escalation', $1, $2
-    FROM users WHERE role IN ('admin', 'super-admin') AND is_active = TRUE;
+    FROM users WHERE role IN ('admin', 'super-admin') AND is_active = TRUE
+    RETURNING *;
   `, [title, message]);
+  for (const row of rows) {
+    notificationEvents.emit('new_notification', row);
+  }
 };
 
 const createNotification = async (userId, type, title, message) => {
@@ -44,15 +49,20 @@ const createNotification = async (userId, type, title, message) => {
     INSERT INTO notifications (user_id, type, title, message)
     VALUES ($1, $2, $3, $4) RETURNING *;
   `, [userId, type, title, message]);
+  notificationEvents.emit('new_notification', rows[0]);
   return rows[0];
 };
 
 const notifyRoles = async (roles, type, title, message) => {
-  await query(`
+  const { rows } = await query(`
     INSERT INTO notifications (user_id, type, title, message)
     SELECT id, $1, $2, $3
-    FROM users WHERE role::text = ANY($4::text[]) AND is_active = TRUE;
+    FROM users WHERE role::text = ANY($4::text[]) AND is_active = TRUE
+    RETURNING *;
   `, [type, title, message, roles]);
+  for (const row of rows) {
+    notificationEvents.emit('new_notification', row);
+  }
 };
 
 module.exports = { listNotifications, getUnreadCount, markAsRead, markAllRead, deleteNotification, fanOutEscalation, createNotification, notifyRoles };

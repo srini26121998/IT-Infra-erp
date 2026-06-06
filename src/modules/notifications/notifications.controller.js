@@ -1,6 +1,7 @@
 'use strict';
 const svc = require('./notifications.service');
 const { success } = require('../../utils/response');
+const notificationEvents = require('./notifications.events');
 
 const listNotifications = async (req, res, next) => {
   try { return success(res, await svc.listNotifications(req.user.id, req.query)); } catch (e) { next(e); }
@@ -18,4 +19,23 @@ const deleteNotif = async (req, res, next) => {
   try { await svc.deleteNotif(req.params.id, req.user.id); return success(res, null, 'Notification deleted'); } catch (e) { next(e); }
 };
 
-module.exports = { listNotifications, getUnreadCount, markRead, markAllRead, deleteNotif };
+const streamNotifications = (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const listener = (notification) => {
+    if (notification.user_id === req.user.id) {
+      res.write(`data: ${JSON.stringify(notification)}\n\n`);
+    }
+  };
+
+  notificationEvents.on('new_notification', listener);
+
+  req.on('close', () => {
+    notificationEvents.off('new_notification', listener);
+  });
+};
+
+module.exports = { listNotifications, getUnreadCount, markRead, markAllRead, deleteNotif, streamNotifications };

@@ -60,7 +60,7 @@ const apply = async (user, body) => {
   const leave = await model.create({ employeeId, type, startDate, endDate, startTime, endTime, reason, backupSupportId });
   
   const notifModel = require('../notifications/notifications.model');
-  await notifModel.notifyRoles(['admin', 'manager'], 'leave', 'New Leave Request', `A new ${type} leave request has been submitted by an employee.`);
+  await notifModel.notifyRoles(['admin', 'super-admin', 'manager'], 'leave', 'New Leave Request', `A new ${type} leave request has been submitted by an employee.`);
   
   return leave;
 };
