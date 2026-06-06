@@ -36,30 +36,39 @@ const createTicket = async (req, res, next) => {
 const assignTicket = async (req, res, next) => {
   try {
     const { employeeId, deadline, assigneeType } = req.body;
-    return success(res, await svc.assignTicket(req.params.id, employeeId, deadline, req.user.name, assigneeType), 'Ticket assigned');
+    const actor = req.user.name || req.user.email || 'System';
+    return success(res, await svc.assignTicket(req.params.id, employeeId, deadline, actor, assigneeType), 'Ticket assigned');
   } catch (e) { next(e); }
 };
 
 const submitWork = async (req, res, next) => {
   try {
     const { text, screenshot, hardwareModel, hardwareCharges, timeElapsed } = req.body;
-    return success(res, await svc.submitWork(req.params.id, text, screenshot, req.user.name, { hardwareModel, hardwareCharges, timeElapsed }), 'Work submitted');
+    const actor = req.user.name || req.user.email || 'System';
+    return success(res, await svc.submitWork(req.params.id, text, screenshot, actor, { hardwareModel, hardwareCharges, timeElapsed }), 'Work submitted');
   } catch (e) { next(e); }
 };
 
 const reviewTicket = async (req, res, next) => {
   try {
     const { status, feedback } = req.body;
-    return success(res, await svc.reviewTicket(req.params.id, status, feedback, req.user.name), `Ticket ${status}`);
+    const actor = req.user.name || req.user.email || 'System';
+    return success(res, await svc.reviewTicket(req.params.id, status, feedback, actor), `Ticket ${status}`);
   } catch (e) { next(e); }
 };
 
 const acknowledgeTicket = async (req, res, next) => {
-  try { return success(res, await svc.acknowledgeTicket(req.params.id, req.user.name), 'Ticket acknowledged'); } catch (e) { next(e); }
+  try { 
+    const actor = req.user.name || req.user.email || 'System';
+    return success(res, await svc.acknowledgeTicket(req.params.id, actor), 'Ticket acknowledged'); 
+  } catch (e) { next(e); }
 };
 
 const acknowledgeAll = async (req, res, next) => {
-  try { return success(res, await svc.acknowledgeAll(req.user.name), 'All breaches acknowledged'); } catch (e) { next(e); }
+  try { 
+    const actor = req.user.name || req.user.email || 'System';
+    return success(res, await svc.acknowledgeAll(actor), 'All breaches acknowledged'); 
+  } catch (e) { next(e); }
 };
 
 module.exports = { listTickets, getStats, exportTickets, getTicket, createTicket, assignTicket, submitWork, reviewTicket, acknowledgeTicket, acknowledgeAll };

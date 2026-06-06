@@ -42,6 +42,7 @@ const login = async (identifier, plainPassword) => {
 
   const accessToken  = signAccessToken({
     id: user.id,
+    name: user.name,
     role: user.role,
     email: user.email,
     companyId: user.company_id,
@@ -95,6 +96,7 @@ const refresh = async (refreshToken) => {
   await model.revokeRefreshToken(sha256(refreshToken), user.id);
   const newAccess  = signAccessToken({
     id: user.id,
+    name: user.name,
     role: user.role,
     email: user.email,
     companyId: user.company_id,
