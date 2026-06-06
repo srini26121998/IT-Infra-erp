@@ -119,7 +119,11 @@ const updateStatus = async (id, user, { status, managerComment }) => {
   if (!updated) throw Object.assign(new Error('Status update failed'), { status: 500 });
   
   const notifModel = require('../notifications/notifications.model');
-  await notifModel.createNotification(leave.employee_id, 'leave', `Leave ${status}`, `Your leave request has been ${status.toLowerCase()}.`);
+  const userQuery = await query('SELECT id FROM users WHERE employee_id = $1 LIMIT 1', [leave.employee_id]);
+  const targetUserId = userQuery.rows[0]?.id;
+  if (targetUserId) {
+    await notifModel.createNotification(targetUserId, 'leave', `Leave ${status}`, `Your leave request has been ${status.toLowerCase()}.`);
+  }
 
   return updated;
 };
