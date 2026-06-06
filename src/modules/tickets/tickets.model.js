@@ -4,9 +4,10 @@ const { query } = require('../../db/pool');
 const listTickets = async ({ role, userId, status, page = 1, limit = 20, search }) => {
   const offset = (page - 1) * limit;
   let sql = `
-    SELECT t.*, e.name as assignee_name 
+    SELECT t.*, COALESCE(e.name, c.name) as assignee_name 
     FROM tickets t
     LEFT JOIN employees e ON t.assigned_employee_id = e.id
+    LEFT JOIN companies c ON t.assigned_company_id = c.id
     WHERE t.deleted_at IS NULL
   `;
   const params = [];
@@ -55,9 +56,10 @@ const exportTickets = async (format) => {
 
 const findById = async (id) => {
   const { rows: ticket } = await query(`
-    SELECT t.*, e.name as assignee_name 
+    SELECT t.*, COALESCE(e.name, c.name) as assignee_name 
     FROM tickets t
     LEFT JOIN employees e ON t.assigned_employee_id = e.id
+    LEFT JOIN companies c ON t.assigned_company_id = c.id
     WHERE t.id = $1 AND t.deleted_at IS NULL
   `, [id]);
   if (!ticket[0]) return null;
@@ -98,15 +100,24 @@ const createTicket = async (data) => {
   return rows[0];
 };
 
-const assignTicket = async (id, employeeId, deadline, actor) => {
+const assignTicket = async (id, assigneeId, deadline, actor, assigneeType = 'employee') => {
+  let employeeId = null;
+  let companyId = null;
+
+  if (assigneeType === 'company') {
+    companyId = assigneeId;
+  } else {
+    employeeId = assigneeId;
+  }
+
   const { rows } = await query(`
     UPDATE tickets SET 
-      status = 'Assigned', assigned_employee_id = $2, deadline = $3, 
+      status = 'Assigned', assigned_employee_id = $2, assigned_company_id = $3, assignee_type = $4, deadline = $5, 
       acknowledged_at = NOW(), updated_at = NOW()
     WHERE id = $1 RETURNING *;
-  `, [id, employeeId, deadline]);
+  `, [id, employeeId, companyId, assigneeType, deadline]);
   
-  await addTimeline(id, `Ticket assigned to technician`, actor || 'System');
+  await addTimeline(id, `Ticket assigned to ${assigneeType === 'company' ? 'company' : 'technician'}`, actor || 'System');
   return rows[0];
 };
 

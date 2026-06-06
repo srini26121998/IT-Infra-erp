@@ -35,8 +35,8 @@ const createTicket = async (req, res, next) => {
 
 const assignTicket = async (req, res, next) => {
   try {
-    const { employeeId, deadline } = req.body;
-    return success(res, await svc.assignTicket(req.params.id, employeeId, deadline, req.user.name), 'Ticket assigned');
+    const { employeeId, deadline, assigneeType } = req.body;
+    return success(res, await svc.assignTicket(req.params.id, employeeId, deadline, req.user.name, assigneeType), 'Ticket assigned');
   } catch (e) { next(e); }
 };
 

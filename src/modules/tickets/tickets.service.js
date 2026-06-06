@@ -6,15 +6,17 @@ const getStats = () => model.getStats();
 const exportTickets = (format) => model.exportTickets(format);
 const getTicket = (id) => model.findById(id);
 const createTicket = (data) => model.createTicket(data);
-const assignTicket = async (id, employeeId, deadline, actor) => {
-  const ticket = await model.assignTicket(id, employeeId, deadline, actor);
+const assignTicket = async (id, employeeId, deadline, actor, assigneeType) => {
+  const ticket = await model.assignTicket(id, employeeId, deadline, actor, assigneeType);
   const notifModel = require('../notifications/notifications.model');
   
   // Notify the assigned employee
-  await notifModel.createNotification(employeeId, 'project', 'Ticket Assigned', `You have been assigned ticket ${id}`);
+  if (assigneeType !== 'company') {
+    await notifModel.createNotification(employeeId, 'project', 'Ticket Assigned', `You have been assigned ticket ${id}`);
+  }
   
   // Notify admin, manager, hr about the assignment
-  await notifModel.notifyRoles(['admin', 'manager', 'hr'], 'project', 'Ticket Assigned', `Ticket ${id} has been assigned to a technician by ${actor}`);
+  await notifModel.notifyRoles(['admin', 'manager', 'hr'], 'project', 'Ticket Assigned', `Ticket ${id} has been assigned to a ${assigneeType === 'company' ? 'company' : 'technician'} by ${actor}`);
   
   return ticket;
 };
