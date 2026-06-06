@@ -120,8 +120,34 @@ const softDelete = async (id) => {
 /** ─── Plans ─────────────────────────────────────────────────── */
 
 const listPlans = async () => {
-  const { rows } = await query('SELECT * FROM subscription_plans WHERE is_active = TRUE ORDER BY price_monthly ASC');
+  const { rows } = await query('SELECT id, name, price_monthly AS "priceMonthly", features, description, is_popular AS "isPopular", is_active AS "isActive" FROM subscription_plans WHERE is_active = TRUE ORDER BY price_monthly ASC');
   return rows;
+};
+
+const createPlan = async (data) => {
+  const { name, priceMonthly, features, description, isPopular } = data;
+  const featuresJson = JSON.stringify(features || []);
+  const { rows } = await query(`
+    INSERT INTO subscription_plans (name, price_monthly, features, description, is_popular)
+    VALUES ($1, $2, $3, $4, $5) RETURNING *;
+  `, [name, priceMonthly, featuresJson, description, isPopular || false]);
+  return rows[0];
+};
+
+const updatePlan = async (id, data) => {
+  const { name, priceMonthly, features, description, isPopular } = data;
+  const featuresJson = JSON.stringify(features || []);
+  const { rows } = await query(`
+    UPDATE subscription_plans SET
+      name = $2, price_monthly = $3, features = $4, description = $5, is_popular = $6
+    WHERE id = $1 RETURNING *;
+  `, [id, name, priceMonthly, featuresJson, description, isPopular || false]);
+  return rows[0];
+};
+
+const deletePlan = async (id) => {
+  const { rowCount } = await query('DELETE FROM subscription_plans WHERE id = $1', [id]);
+  return rowCount > 0;
 };
 
 /** ─── Transactions ─────────────────────────────────────────── */
@@ -164,5 +190,5 @@ const runExpiryChecks = async () => {
 
 module.exports = { 
   list, findById, create, update, renew, softDelete,
-  listPlans, findTransactionByOrderId, createTransaction, runExpiryChecks 
+  listPlans, createPlan, updatePlan, deletePlan, findTransactionByOrderId, createTransaction, runExpiryChecks 
 };

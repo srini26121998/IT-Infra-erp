@@ -30,6 +30,15 @@ const sendReminder = async (req, res, next) => {
 const listPlans = async (req, res, next) => {
   try { return success(res, await svc.listPlans()); } catch (e) { next(e); }
 };
+const createPlan = async (req, res, next) => {
+  try { return success(res, await svc.createPlan(req.body), 'Created Plan', 201); } catch (e) { next(e); }
+};
+const updatePlan = async (req, res, next) => {
+  try { return success(res, await svc.updatePlan(req.params.id, req.body), 'Updated Plan'); } catch (e) { next(e); }
+};
+const deletePlan = async (req, res, next) => {
+  try { await svc.deletePlan(req.params.id); return success(res, null, 'Deleted Plan'); } catch (e) { next(e); }
+};
 const initiatePayment = async (req, res, next) => {
   try { return success(res, { checkoutUrl: 'https://gateway.example.com/pay' }); } catch (e) { next(e); }
 };
@@ -39,5 +48,5 @@ const paymentWebhook = async (req, res, next) => {
 
 module.exports = {
   listSubscriptions, getSubscription, createSubscription, updateSubscription, deleteSubscription,
-  renewSubscription, sendReminder, listPlans, initiatePayment, paymentWebhook
+  renewSubscription, sendReminder, listPlans, createPlan, updatePlan, deletePlan, initiatePayment, paymentWebhook
 };

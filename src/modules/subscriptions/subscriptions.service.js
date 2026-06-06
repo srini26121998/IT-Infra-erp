@@ -9,6 +9,9 @@ const renewSubscription = (id) => model.renew(id);
 const deleteSubscription = (id) => model.softDelete(id);
 
 const listPlans = () => model.listPlans();
+const createPlan = (data) => model.createPlan(data);
+const updatePlan = (id, data) => model.updatePlan(id, data);
+const deletePlan = (id) => model.deletePlan(id);
 
 const handleWebhook = async (payload) => {
   const { order_id, transaction_id, status, amount, subscription_id } = payload;
@@ -36,5 +39,5 @@ const sendExpiryReminder = async (id) => {
 
 module.exports = {
   listSubscriptions, getSubscription, createSubscription, updateSubscription, renewSubscription, deleteSubscription,
-  listPlans, handleWebhook, sendExpiryReminder
+  listPlans, createPlan, updatePlan, deletePlan, handleWebhook, sendExpiryReminder
 };

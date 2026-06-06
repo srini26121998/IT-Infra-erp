@@ -16,6 +16,9 @@ const adminOnly = authorize('admin', 'super-admin');
 const superOnly = authorize('super-admin');
 
 router.get('/', adminOnly, ctrl.listSubscriptions);
+router.post('/plans', adminOnly, ctrl.createPlan);
+router.put('/plans/:id', adminOnly, ctrl.updatePlan);
+router.delete('/plans/:id', superOnly, ctrl.deletePlan);
 router.post('/', adminOnly, ctrl.createSubscription);
 router.get('/:id', adminOnly, ctrl.getSubscription);
 router.put('/:id', adminOnly, ctrl.updateSubscription);
