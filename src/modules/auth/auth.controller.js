@@ -33,8 +33,8 @@ const refresh = async (req, res, next) => {
 // POST /v1/auth/signup
 const signup = async (req, res, next) => {
   try {
-    const { name, email, username, password, companyId } = req.body;
-    const data = await authService.signup({ name, email, username, password, companyId });
+    const { name, email, username, password, companyId, role } = req.body;
+    const data = await authService.signup({ name, email, username, password, companyId, role });
     return success(res, data, 'Registration successful — please verify your email', 201);
   } catch (err) { next(err); }
 };

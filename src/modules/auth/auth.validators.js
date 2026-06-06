@@ -13,6 +13,7 @@ const signupRules = [
     .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
     .matches(/[A-Z]/).withMessage('Password must contain an uppercase letter')
     .matches(/[0-9]/).withMessage('Password must contain a number'),
+  body('role').notEmpty().withMessage('Role is required').isIn(['super-admin','admin','hr','manager','employee','company','helpdesk']).withMessage('Invalid role'),
 ];
 
 const forgotPasswordRules = [

@@ -107,21 +107,22 @@ const refresh = async (refreshToken) => {
 };
 
 /**
- * Signup — company self-registration, sends OTP for verification.
+ * Signup — registration, sends OTP for verification.
+ * Requires role parameter to be passed explicitly.
  */
-const signup = async ({ name, email, username, password, companyId }) => {
+const signup = async ({ name, email, username, password, companyId, role }) => {
   const existing = await model.findUserByEmail(email);
   if (existing) throw Object.assign(new Error('Email already registered'), { status: 409 });
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await model.createUser({ name, email, username, passwordHash, role: 'company', companyId });
+  const user = await model.createUser({ name, email, username, passwordHash, role, companyId });
 
   // Send email verification OTP
   const otp = generateOtp();
   await model.storeOtpToken(email, sha256(otp), 'signup', minutesFromNow(OTP_EXPIRES_MINUTES));
   await sendOtpEmail(email, otp, 'signup');
 
-  return { id: user.id, name: user.name, email: user.email };
+  return { id: user.id, name: user.name, email: user.email, role: user.role };
 };
 
 /**
