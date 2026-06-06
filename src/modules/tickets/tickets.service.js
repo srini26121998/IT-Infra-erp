@@ -9,14 +9,21 @@ const createTicket = (data) => model.createTicket(data);
 const assignTicket = async (id, employeeId, deadline, actor, assigneeType) => {
   const ticket = await model.assignTicket(id, employeeId, deadline, actor, assigneeType);
   const notifModel = require('../notifications/notifications.model');
+  const { query } = require('../../db/pool');
   
-  // Notify the assigned employee
-  if (assigneeType !== 'contract') {
-    await notifModel.createNotification(employeeId, 'project', 'Ticket Assigned', `You have been assigned ticket ${id}`);
+  if (assigneeType !== 'contract' && assigneeType !== 'company') {
+    const { rows } = await query('SELECT id FROM users WHERE employee_id = $1 LIMIT 1', [employeeId]);
+    if (rows.length > 0) {
+      await notifModel.createNotification(rows[0].id, 'project', 'Ticket Assigned', `You have been assigned ticket ${id}`);
+    }
+  } else {
+    const { rows } = await query('SELECT id FROM users WHERE company_id = $1 LIMIT 1', [employeeId]);
+    if (rows.length > 0) {
+      await notifModel.createNotification(rows[0].id, 'project', 'Ticket Assigned', `You have been assigned ticket ${id}`);
+    }
   }
   
-  // Notify admin about the assignment
-  await notifModel.notifyRoles(['admin'], 'project', 'Ticket Assigned', `Ticket ${id} has been assigned to a ${assigneeType === 'contract' ? 'contractor' : 'technician'} by ${actor}`);
+  await notifModel.notifyRoles(['admin'], 'project', 'Ticket Assigned', `Ticket ${id} has been assigned to a ${assigneeType === 'contract' || assigneeType === 'company' ? 'contractor' : 'technician'} by ${actor}`);
   
   return ticket;
 };

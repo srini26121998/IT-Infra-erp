@@ -104,7 +104,7 @@ const assignTicket = async (id, assigneeId, deadline, actor, assigneeType = 'emp
   let employeeId = null;
   let companyId = null;
 
-  if (assigneeType === 'contract') {
+  if (assigneeType === 'contract' || assigneeType === 'company') {
     companyId = assigneeId;
   } else {
     employeeId = assigneeId;
@@ -117,7 +117,7 @@ const assignTicket = async (id, assigneeId, deadline, actor, assigneeType = 'emp
     WHERE id = $1 RETURNING *;
   `, [id, employeeId, companyId, assigneeType, deadline]);
   
-  await addTimeline(id, `Ticket assigned to ${assigneeType === 'contract' ? 'contractor' : 'technician'}`, actor || 'System');
+  await addTimeline(id, `Ticket assigned to ${assigneeType === 'contract' || assigneeType === 'company' ? 'contractor' : 'technician'}`, actor || 'System');
   return rows[0];
 };
 
